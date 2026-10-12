@@ -1,0 +1,37 @@
+name: expense-tracker-api
+
+services:
+    db:
+      image: postgres:16-alpine
+      restart: always
+      container_name: expense-tracker-api
+      environment:
+        POSTGRES_PASSWORD: admin
+        POSTGRES_USER: admin
+        POSTGRES_DB: expense-tracker-api
+      ports:
+        - 5434:5432
+      volumes:
+        - pgdata:/var/lib/postgresql/data
+        - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+
+    adiner:
+      image: adminer
+      restart: always
+      ports:
+        - "8080:8080"
+      depends_on:
+        - db
+
+    rabbitmg:
+      image: rabbitmq:3-management-alpine
+      restart: always
+      container_name: expense-tracker-rabbitmq
+      environment:
+        RABBITMQ_DEFAULT_USER: admin
+        RABBITMQ_DEFAULT_PASS: admin
+      ports:
+        - "5582:5672"
+        - "15672:15672"
+volumes:
+  pgdata:
