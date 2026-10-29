@@ -1,6 +1,7 @@
 package com.roadmap.expense_tracker_api.entity;
 import jakarta.persistence.*;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "expenses")
@@ -24,13 +25,13 @@ public class ExpensesEntity {
     private Double amount;
 
     @Column(name = "expense_date", nullable = false)
-    private LocalDate expenseDate;
+    private LocalDateTime expenseDate;
 
-    @Column(name = "created_at")
-    private LocalDate createdAt;
+    @Column(name = "created_at", nullable = false)
+    private LocalDateTime createdAt;
 
-    @Column(name = "update_at")
-    private LocalDate updateAt;
+    @Column(name = "update_at", nullable = false)
+    private LocalDateTime updateAt;
 
     //Getters and Setters
 
@@ -74,27 +75,27 @@ public class ExpensesEntity {
         this.amount = amount;
     }
 
-    public LocalDate getExpenseDate() {
+    public LocalDateTime getExpenseDate() {
         return expenseDate;
     }
 
-    public void setExpenseDate(LocalDate expenseDate) {
+    public void setExpenseDate(LocalDateTime expenseDate) {
         this.expenseDate = expenseDate;
     }
 
-    public LocalDate getCreatedAt() {
+    public LocalDateTime getCreatedAt() {
         return createdAt;
     }
 
-    public void setCreatedAt(LocalDate createdAt) {
+    public void setCreatedAt(LocalDateTime createdAt) {
         this.createdAt = createdAt;
     }
 
-    public LocalDate getUpdateAt() {
+    public LocalDateTime getUpdateAt() {
         return updateAt;
     }
 
-    public void setUpdateAt(LocalDate updateAt) {
+    public void setUpdateAt(LocalDateTime updateAt) {
         this.updateAt = updateAt;
     }
 }

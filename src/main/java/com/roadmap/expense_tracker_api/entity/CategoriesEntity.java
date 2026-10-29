@@ -11,5 +11,23 @@ public class CategoriesEntity {
     private int id;
 
     @Column(name = "name")
-    private String CategoryName;
+    private String categoryName;
+
+    //Getters and Setters
+
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public String getCategoryName() {
+        return categoryName;
+    }
+
+    public void setCategoryName(String categoryName) {
+        this.categoryName = categoryName;
+    }
 }
