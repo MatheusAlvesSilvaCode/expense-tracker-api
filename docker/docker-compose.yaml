@@ -3,7 +3,7 @@ name: expense-tracker-api
 services:
     db:
       image: postgres:16-alpine
-      restart: always
+      restart: "no"
       container_name: expense-tracker-api
       environment:
         POSTGRES_PASSWORD: admin
@@ -17,15 +17,15 @@ services:
 
     adiner:
       image: adminer
-      restart: always
+      restart: "no"
       ports:
-        - "8080:8080"
+        - "8090:8080"
       depends_on:
         - db
 
     rabbitmg:
       image: rabbitmq:3-management-alpine
-      restart: always
+      restart: "no"
       container_name: expense-tracker-rabbitmq
       environment:
         RABBITMQ_DEFAULT_USER: admin
