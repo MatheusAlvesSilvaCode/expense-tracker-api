@@ -1,0 +1,305 @@
+<div class="app-shell">
+  <header class="topbar">
+    <div class="brand">
+      <span class="brand-badge">ET</span>
+      <div>
+        <h1>Expense-Tracker</h1>
+        <p class="subtitle">Smart personal spending tracker</p>
+      </div>
+    </div>
+
+    @if (loggedIn) {
+      <button type="button" class="btn btn-ghost" (click)="onLogout()">Sign out</button>
+    }
+  </header>
+
+  @if (statusMessage) {
+    <div class="alert alert-success">{{ statusMessage }}</div>
+  }
+
+  @if (errorMessage) {
+    <div class="alert alert-error">{{ errorMessage }}</div>
+  }
+
+  @if (!loggedIn) {
+    <section class="auth-card card">
+      @if (!isRegisterMode) {
+        <h2>Welcome back</h2>
+        <p class="muted">Sign in with your account to manage your expenses.</p>
+
+        <form (ngSubmit)="onLogin()" class="stack-form">
+          <label class="field">
+            <span>Email</span>
+            <input
+              type="email"
+              name="email"
+              [(ngModel)]="email"
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input
+              type="password"
+              name="password"
+              [(ngModel)]="password"
+              placeholder="••••••••"
+              required
+            />
+          </label>
+
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Signing in...' : 'Sign in' }}
+          </button>
+        </form>
+
+        <p class="muted small auth-switch">
+          Don't have an account?
+          <button type="button" class="link-btn" (click)="toggleAuthMode()">Create account</button>
+        </p>
+      } @else {
+        <h2>Create account</h2>
+        <p class="muted">Register a new user to start tracking expenses.</p>
+
+        <form (ngSubmit)="onRegister()" class="stack-form">
+          <label class="field">
+            <span>Name</span>
+            <input
+              type="text"
+              name="nameUser"
+              [(ngModel)]="nameUser"
+              placeholder="Guilty3"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>Email</span>
+            <input
+              type="email"
+              name="registerEmail"
+              [(ngModel)]="email"
+              placeholder="you@example.com"
+              required
+            />
+          </label>
+
+          <label class="field">
+            <span>Password</span>
+            <input
+              type="password"
+              name="registerPassword"
+              [(ngModel)]="password"
+              placeholder="••••••••"
+              required
+            />
+          </label>
+
+          <button type="submit" class="btn btn-primary" [disabled]="isLoading">
+            {{ isLoading ? 'Creating account...' : 'Create account' }}
+          </button>
+        </form>
+
+        <p class="muted small auth-switch">
+          Already have an account?
+          <button type="button" class="link-btn" (click)="toggleAuthMode()">Sign in</button>
+        </p>
+      }
+    </section>
+  } @else {
+    <main class="dashboard-grid">
+      <!-- Create Expense Card -->
+      <section class="card form-card">
+        <div class="card-header">
+          <h2>New expense</h2>
+          <span class="pill">Create</span>
+        </div>
+
+        <form (ngSubmit)="onCreateExpense()" class="stack-form">
+          <label class="field">
+            <span>Description</span>
+            <input
+              type="text"
+              name="description"
+              [(ngModel)]="newExpense.description"
+              placeholder="Coffee, groceries, metro..."
+              required
+            />
+          </label>
+
+          <div class="two-cols">
+            <label class="field">
+              <span>Amount</span>
+              <input
+                type="number"
+                step="0.01"
+                name="amount"
+                [(ngModel)]="newExpense.amount"
+                required
+              />
+            </label>
+
+            <label class="field">
+              <span>Category</span>
+              <select name="categoryId" [(ngModel)]="newExpense.categoryId" required>
+                @if (categories.length === 0) {
+                  <option [value]="1">Loading categories...</option>
+                } @else {
+                  @for (cat of categories; track cat.id) {
+                    <option [value]="cat.id">{{ getCategoryLabel(cat) }}</option>
+                  }
+                }
+              </select>
+            </label>
+          </div>
+
+          <label class="field">
+            <span>Date &amp; time</span>
+            <input
+              type="datetime-local"
+              step="1"
+              name="expenseDate"
+              [(ngModel)]="newExpense.expenseDate"
+              required
+            />
+          </label>
+
+          <button type="submit" class="btn btn-primary">Add expense</button>
+        </form>
+      </section>
+
+      <!-- Feed & Filters Column -->
+      <section class="feed-column">
+        <div class="card summary-bar">
+          <div>
+            <span class="muted small">Filtered total</span>
+            <div class="total-value">{{ totalAmount | number: '1.2-2' }}</div>
+          </div>
+
+          <div class="filter-pills">
+            <button
+              type="button"
+              class="chip"
+              [class.active]="activeFilter === 'week'"
+              (click)="loadExpenses('week')"
+            >
+              Past week
+            </button>
+            <button
+              type="button"
+              class="chip"
+              [class.active]="activeFilter === 'month'"
+              (click)="loadExpenses('month')"
+            >
+              Past month
+            </button>
+            <button
+              type="button"
+              class="chip"
+              [class.active]="activeFilter === 'three-months'"
+              (click)="loadExpenses('three-months')"
+            >
+              Last 3 months
+            </button>
+          </div>
+        </div>
+
+        @if (isLoading) {
+          <div class="card empty-state">Loading expenses...</div>
+        } @else if (expenses.length === 0) {
+          <div class="card empty-state">
+            <p>No expenses found for this period.</p>
+            <span class="muted small">Try switching the filter or add a new expense on the left.</span>
+          </div>
+        } @else {
+          <div class="cards-list">
+            @for (item of expenses; track item.id ?? $index) {
+              <article class="card expense-card">
+                @if (editingId === item.id) {
+                  <div class="edit-mode">
+                    <div class="two-cols">
+                      <label class="field">
+                        <span>Description</span>
+                        <input
+                          type="text"
+                          name="editDesc_{{ item.id }}"
+                          [(ngModel)]="editForm.description"
+                        />
+                      </label>
+
+                      <label class="field">
+                        <span>Amount</span>
+                        <input
+                          type="number"
+                          step="0.01"
+                          name="editAmount_{{ item.id }}"
+                          [(ngModel)]="editForm.amount"
+                        />
+                      </label>
+                    </div>
+
+                    <div class="two-cols">
+                      <label class="field">
+                        <span>Date &amp; time</span>
+                        <input
+                          type="datetime-local"
+                          step="1"
+                          name="editDate_{{ item.id }}"
+                          [(ngModel)]="editForm.expenseDate"
+                        />
+                      </label>
+
+                      <label class="field">
+                        <span>Category</span>
+                        <select name="editCat_{{ item.id }}" [(ngModel)]="editForm.categoryId">
+                          @for (cat of categories; track cat.id) {
+                            <option [value]="cat.id">{{ getCategoryLabel(cat) }}</option>
+                          }
+                        </select>
+                      </label>
+                    </div>
+
+                    <div class="card-actions">
+                      <button type="button" class="btn btn-primary btn-sm" (click)="saveEdit(item.id)">
+                        Save changes
+                      </button>
+                      <button type="button" class="btn btn-ghost btn-sm" (click)="cancelEdit()">
+                        Cancel
+                      </button>
+                    </div>
+                  </div>
+                } @else {
+                  <div class="expense-main">
+                    <div>
+                      <div class="expense-title-row">
+                        <h3>{{ item.description }}</h3>
+                        <span class="category-tag">{{ getCategoryName(item) }}</span>
+                      </div>
+                      @if (item.expenseDate) {
+                        <p class="muted small">{{ item.expenseDate }}</p>
+                      }
+                    </div>
+
+                    <div class="expense-right">
+                      <span class="amount-badge">-{{ item.amount | number: '1.2-2' }}</span>
+                      <div class="card-actions">
+                        <button type="button" class="btn btn-secondary btn-sm" (click)="startEdit(item)">
+                          Edit
+                        </button>
+                        <button type="button" class="btn btn-danger btn-sm" (click)="onDeleteExpense(item.id)">
+                          Delete
+                        </button>
+                      </div>
+                    </div>
+                  </div>
+                }
+              </article>
+            }
+          </div>
+        }
+      </section>
+    </main>
+  }
+</div>

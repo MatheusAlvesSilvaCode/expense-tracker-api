@@ -1,4 +1,11 @@
 package com.roadmap.expense_tracker_api.dto;
 
-public record UserDto() {
-}
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+
+public record UserDto(
+        Integer id,
+        String nameUser,
+        String emailUser,
+        String password
+) {}
