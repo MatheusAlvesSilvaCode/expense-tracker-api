@@ -1,25 +1,32 @@
 package com.roadmap.expense_tracker_api.entity;
+
 import jakarta.persistence.*;
-import java.time.LocalDate;
+import org.springframework.data.annotation.CreatedDate;
+import org.springframework.data.annotation.LastModifiedDate;
+import org.springframework.data.jpa.domain.support.AuditingEntityListener;
+
 import java.time.LocalDateTime;
 
 @Entity
 @Table(name = "expenses")
+@EntityListeners(AuditingEntityListener.class) // Não se esqueça da auditoria que vimos antes!
 public class ExpensesEntity {
 
-    //Tables and columns we are going use.
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private int id;
 
-    @Column(name = "user_id")
-    private String userId;
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = false)
+    private UserEntity user;
 
-    @Column(name = "category_id")
-    private String categoryId;
+    // Relacionamento com a tabela CategoriesEntity
+    @ManyToOne
+    @JoinColumn(name = "category_id", nullable = false)
+    private CategoriesEntity category;
 
     @Column(name = "description")
-    private  String description;
+    private String description;
 
     @Column(name = "amount")
     private Double amount;
@@ -27,13 +34,15 @@ public class ExpensesEntity {
     @Column(name = "expense_date", nullable = false)
     private LocalDateTime expenseDate;
 
-    @Column(name = "created_at", nullable = false)
+    @CreatedDate
+    @Column(name = "created_at", nullable = false, updatable = false)
     private LocalDateTime createdAt;
 
-    @Column(name = "update_at", nullable = false)
+    @LastModifiedDate
+    @Column(name = "updated_at", nullable = false)
     private LocalDateTime updateAt;
 
-    //Getters and Setters
+    // Getters and Setters
 
     public int getId() {
         return id;
@@ -43,20 +52,20 @@ public class ExpensesEntity {
         this.id = id;
     }
 
-    public String getUserId() {
-        return userId;
+    public UserEntity getUser() {
+        return user;
     }
 
-    public void setUserId(String userId) {
-        this.userId = userId;
+    public void setUser(UserEntity user) {
+        this.user = user;
     }
 
-    public String getCategoryId() {
-        return categoryId;
+    public CategoriesEntity getCategory() {
+        return category;
     }
 
-    public void setCategoryId(String categoryId) {
-        this.categoryId = categoryId;
+    public void setCategory(CategoriesEntity category) {
+        this.category = category;
     }
 
     public String getDescription() {

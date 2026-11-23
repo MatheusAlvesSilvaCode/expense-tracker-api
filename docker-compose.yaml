@@ -1,0 +1,82 @@
+name: expense-tracker
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: "no"
+    container_name: expense-tracker-db
+    environment:
+      POSTGRES_PASSWORD: admin
+      POSTGRES_USER: admin
+      POSTGRES_DB: expense-tracker-api
+    ports:
+      - "5435:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+      - ./docker/init.sql:/docker-entrypoint-initdb.d/init.sql
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin -d expense-tracker-api"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  adminer:
+    image: adminer
+    restart: "no"
+    container_name: expense-tracker-adminer
+    ports:
+      - "8090:8080"
+    depends_on:
+      - db
+
+  rabbitmg:
+    image: rabbitmq:3-management-alpine
+    restart: "no"
+    container_name: expense-tracker-rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: admin
+      RABBITMQ_DEFAULT_PASS: admin
+    ports:
+      - "5582:5672"
+      - "15672:15672"
+    healthcheck:
+      test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  backend:
+    build:
+      context: .
+      dockerfile: docker/Dockerfile
+    container_name: expense-tracker-backend
+    restart: "no"
+    ports:
+      - "8080:8080"
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/expense-tracker-api
+      SPRING_DATASOURCE_USERNAME: admin
+      SPRING_DATASOURCE_PASSWORD: admin
+      SPRING_RABBITMQ_HOST: rabbitmg
+      SPRING_RABBITMQ_PORT: 5672
+      SPRING_RABBITMQ_USERNAME: admin
+      SPRING_RABBITMQ_PASSWORD: admin
+    depends_on:
+      db:
+        condition: service_healthy
+      rabbitmg:
+        condition: service_healthy
+
+  frontend:
+    build:
+      context: ../../expense-tracker-front/expense-tracker-front
+      dockerfile: Dockerfile
+    container_name: expense-tracker-frontend
+    restart: "no"
+    ports:
+      - "4200:80"
+    depends_on:
+      - backend
+
+volumes:
+  pgdata:

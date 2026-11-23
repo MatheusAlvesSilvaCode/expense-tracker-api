@@ -15,7 +15,7 @@ public class CategoriesEntity {
 
     //Getters and Setters
 
-    public int getId() {
+    public Integer getId() {
         return id;
     }
 
